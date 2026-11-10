@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SA Government Tender Bid Planner</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3798136929908284" crossorigin="anonymous"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @media print {
@@ -111,7 +112,7 @@
             <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
               <th class="p-3 w-12">#</th>
               <th class="p-3 min-w-[200px]">Item Description</th>
-              <th class="p-3 w-24">Qty</th>
+              <th class="p-3 min-w-[6rem]">Qty</th>
               <th class="p-3 w-36">Supplier Unit Cost (R)</th>
               <th class="p-3 w-36">Delivery / Other Direct Costs (R)</th>
               <th class="p-3 w-24">Risk Buffer %</th>
@@ -232,7 +233,7 @@
         tr.innerHTML = `
           <td class="p-3 font-medium text-slate-500">${index + 1}</td>
           <td class="p-3"><input type="text" value="${item.desc}" oninput="updateItem(${index}, 'desc', this.value)" class="w-full border border-slate-200 rounded px-2 py-1.5 text-sm focus:border-emerald-500 outline-none"></td>
-          <td class="p-3"><input type="number" min="1" value="${item.qty}" oninput="updateItem(${index}, 'qty', parseFloat(this.value)||1)" class="w-full border border-slate-200 rounded px-2 py-1.5 text-sm"></td>
+          <td class="p-3 min-w-[6rem]"><input type="number" min="1" value="${item.qty}" oninput="updateItem(${index}, 'qty', parseFloat(this.value)||1)" class="block w-full min-w-[4rem] border border-slate-300 bg-white text-slate-900 rounded px-2 py-1.5 text-sm text-right tabular-nums"></td>
           <td class="p-3"><input type="number" step="0.01" value="${item.unitCost}" oninput="updateItem(${index}, 'unitCost', parseFloat(this.value)||0)" class="w-full border border-slate-200 rounded px-2 py-1.5 text-sm"></td>
           <td class="p-3"><input type="number" step="0.01" value="${item.delivery}" oninput="updateItem(${index}, 'delivery', parseFloat(this.value)||0)" class="w-full border border-slate-200 rounded px-2 py-1.5 text-sm"></td>
           <td class="p-3"><input type="number" step="0.5" value="${item.buffer}" oninput="updateItem(${index}, 'buffer', parseFloat(this.value)||0)" class="w-full border border-slate-200 rounded px-2 py-1.5 text-sm"></td>
