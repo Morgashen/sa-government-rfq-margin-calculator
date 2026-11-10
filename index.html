@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SA Government RFQ Margin & SBD 3.1 Pricing Calculator</title>
+  <title>SA Government Tender Bid Planner</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @media print {
@@ -17,9 +17,9 @@
     <!-- Header -->
     <div class="bg-slate-900 text-white rounded-2xl p-6 mb-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div>
-        <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Bonus Toolkit • SBD 3.1 Ready</span>
-        <h1 class="text-2xl md:text-3xl font-bold mt-2">SA Government RFQ Pricing & Margin Calculator</h1>
-        <p class="text-slate-300 text-sm mt-1">Calculate your true landed cost, protect against supplier price increases, and generate exact SBD 3.1 figures.</p>
+        <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">South Africa • Pre-bid planning</span>
+        <h1 class="text-2xl md:text-3xl font-bold mt-2">Government Tender Bid Planner</h1>
+        <p class="text-slate-300 text-sm mt-1">Check readiness, build a defensible price, estimate current tax reserves and model preference points before submission.</p>
       </div>
       <div class="flex flex-wrap gap-2 no-print">
         <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow">
@@ -37,9 +37,15 @@
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">VAT Status (SARS)</label>
         <select id="vatStatus" onchange="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
           <option value="non-vat">Non-VAT Vendor (R0 VAT on SBD 3.1)</option>
-          <option value="vat">VAT Registered Vendor (Add 15% VAT)</option>
+          <option value="vat">VAT Registered Vendor (add current VAT)</option>
         </select>
-        <p id="vatHint" class="text-xs text-slate-500 mt-2">Enter supplier prices <strong class="text-slate-700">Including VAT</strong> so you don't lose 15% margin.</p>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mt-3 mb-1" for="vatRate">Standard VAT rate (%)</label>
+        <input id="vatRate" type="number" value="15" min="0" max="100" step="0.1" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mt-3 mb-1" for="vatSales">Taxable sales in last 12 months (R)</label>
+        <input id="vatSales" type="number" value="0" min="0" step="1000" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+        <p id="vatThresholdNote" class="text-xs text-slate-500 mt-1"></p>
+        <p id="vatHint" class="text-xs text-slate-500 mt-2">SARS standard VAT rate shown: 15%. Check whether your supply is standard-rated, zero-rated or exempt.</p>
+        <p class="text-xs text-slate-500 mt-1">From 1 April 2026: R2.3m compulsory threshold; R120,000 voluntary. <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/value-added-tax/" target="_blank" rel="noreferrer">SARS VAT guidance</a></p>
       </div>
 
       <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
@@ -61,6 +67,31 @@
       </div>
     </div>
 
+    <!-- Pre-bid readiness -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+      <div class="flex justify-between items-start gap-4 mb-4 flex-wrap">
+        <div><h2 class="text-base font-bold text-slate-800 mb-1">Pre-bid readiness checklist</h2>
+          <p class="text-xs text-slate-500">Use the tender pack and addenda as the authority. Tick each check only when evidence is ready.</p></div>
+        <div class="min-w-48"><div class="flex justify-between text-xs font-semibold mb-1"><span>Completed</span><span id="checkProgressText">0 / 12</span></div>
+          <div class="h-2 bg-slate-100 rounded overflow-hidden"><div id="checkProgressBar" class="h-full bg-emerald-600 w-0"></div></div></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="tenderChecklist">
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> Tender pack, addenda, closing date/time and submission channel verified</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> Mandatory briefing/site visit attended and proof retained, if required</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> Eligibility, specifications and minimum functionality evidence checked</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> CSD supplier profile active and details current</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> SARS Tax Compliance Status / PIN verified and available</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> VAT vendor status and tender price VAT treatment confirmed</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> B-BBEE evidence and specific-goal claim documents ready</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> Required SBD/MBD forms completed, signed and initialled</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> Stock, delivery lead time, staffing, service levels and capacity confirmed</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> Subcontracting/JV documents and partner compliance checked, if applicable</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> Insurance, bid security, performance guarantee and payment terms reviewed</label>
+        <label class="flex gap-2 border rounded-lg p-3 text-sm"><input type="checkbox" class="tender-check mt-1"> Price arithmetic, all delivery costs, signatures and final upload checked</label>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">CSD and SARS status are not checked automatically. Requirements vary by tender; verify every item against the current notice.</p>
+    </div>
+
     <!-- Calculator Table -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
       <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-100/70">
@@ -68,6 +99,11 @@
         <button onclick="addRow()" class="no-print bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition">
           + Add RFQ Line Item
         </button>
+      </div>
+      <div class="px-4 pt-3">
+        <label for="pricingMethod" class="text-xs font-semibold text-slate-600">Price using</label>
+        <select id="pricingMethod" onchange="recalculateAll()" class="ml-2 border border-slate-300 rounded px-2 py-1 text-xs"><option value="markup">Markup on cost</option><option value="margin">Target gross margin</option></select>
+        <span class="text-xs text-slate-500 ml-2">Other costs can include labour, packaging, insurance, customs duty, installation or subcontractors.</span>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-sm">
@@ -77,10 +113,10 @@
               <th class="p-3 min-w-[200px]">Item Description</th>
               <th class="p-3 w-24">Qty</th>
               <th class="p-3 w-36">Supplier Unit Cost (R)</th>
-              <th class="p-3 w-36">Total Delivery / Courier (R)</th>
+              <th class="p-3 w-36">Delivery / Other Direct Costs (R)</th>
               <th class="p-3 w-24">Risk Buffer %</th>
               <th class="p-3 w-36 bg-slate-100 text-slate-700">True Landed Unit Cost</th>
-              <th class="p-3 w-28">Target Markup %</th>
+              <th class="p-3 w-28">Target Markup / Margin %</th>
               <th class="p-3 w-40 bg-emerald-50 text-emerald-900 font-bold">SBD 3.1 Bid Unit Price</th>
               <th class="p-3 w-40 bg-emerald-100/70 text-emerald-950 font-bold">SBD 3.1 Line Total</th>
               <th class="p-3 w-32">Net Profit</th>
@@ -95,11 +131,64 @@
       </div>
     </div>
 
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+      <h2 class="text-base font-bold text-slate-800 mb-1">Labour and employer levy estimator</h2>
+      <p class="text-xs text-slate-500 mb-4">Add tender-period wages once here; do not also include the same wages in line items. PAYE is withheld from employees and is not an extra employer cost.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div><label for="tenderPayroll" class="block text-xs font-semibold text-slate-600 mb-1">Gross wages per month (R)</label><input id="tenderPayroll" type="number" min="0" step="1000" value="0" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+        <div><label for="payrollEmployees" class="block text-xs font-semibold text-slate-600 mb-1">Employees</label><input id="payrollEmployees" type="number" min="0" step="1" value="0" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+        <div><label for="payrollMonths" class="block text-xs font-semibold text-slate-600 mb-1">Tender months</label><input id="payrollMonths" type="number" min="0" step="1" value="0" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+        <div><label for="annualPayroll" class="block text-xs font-semibold text-slate-600 mb-1">Employer annual payroll (R)</label><input id="annualPayroll" type="number" min="0" step="10000" value="0" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+      </div>
+      <div class="mt-3 bg-slate-50 rounded-lg p-3 text-sm">Tender-period labour plus employer levies: <strong id="payrollCostResult">R 0.00</strong><div id="payrollLeviesResult" class="text-xs text-slate-500 mt-1">Employer UIF R 0.00 · SDL R 0.00</div></div>
+      <p class="text-xs text-slate-500 mt-2">2026/27 planning rates: employer UIF 1% per employee, capped at R17,712 monthly remuneration; SDL 1% if annual payroll exceeds R500,000, subject to exemptions. Confirm payroll rules and exemptions with SARS.</p>
+    </div>
+
+    <!-- Tax reserve and current rates -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+      <h2 class="text-base font-bold text-slate-800 mb-1">Tax reserve planner — 2026/27 rates</h2>
+      <p class="text-xs text-slate-500 mb-4">Planning estimate only. Tax depends on entity eligibility, deductions and your annual position.</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div><label for="taxRegime" class="block text-xs font-semibold text-slate-600 mb-1">Tax regime</label>
+          <select id="taxRegime" onchange="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            <option value="company">Company — 27% corporate income tax</option><option value="sbc">Qualifying small business corporation (SBC)</option><option value="individual">Sole proprietor / individual</option><option value="turnover">Registered turnover-tax micro-business</option><option value="custom">Custom effective rate</option>
+          </select></div>
+        <div><label for="taxableBefore" class="block text-xs font-semibold text-slate-600 mb-1">Annual taxable income before this bid (R)</label>
+          <input id="taxableBefore" type="number" min="0" step="1000" value="0" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+        <div><label for="customTaxRate" class="block text-xs font-semibold text-slate-600 mb-1">Custom estimated rate (%)</label>
+          <input id="customTaxRate" type="number" min="0" max="100" step="0.1" value="27" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div><label for="taxableTurnoverBefore" class="block text-xs font-semibold text-slate-600 mb-1">Turnover before this bid (R)</label>
+          <input id="taxableTurnoverBefore" type="number" min="0" step="1000" value="0" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"><p class="text-xs text-slate-500 mt-1">Used only for turnover-tax estimate; confirm taxable turnover with SARS.</p></div>
+        <div><label for="individualAge" class="block text-xs font-semibold text-slate-600 mb-1">Individual age band</label>
+          <select id="individualAge" onchange="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"><option value="under65">Under 65</option><option value="65">65–74</option><option value="75">75 or older</option></select></div>
+        <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3"><span class="text-xs font-semibold uppercase text-emerald-800">Estimated tax reserve</span><div id="taxReserve" class="text-xl font-bold text-emerald-900">R 0.00</div><span id="afterTaxProfit" class="text-xs text-emerald-800">Estimated profit after reserve: R 0.00</span></div>
+      </div>
+      <div id="taxRateCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mt-4 text-xs"></div>
+      <details class="mt-4 border rounded-lg p-4 text-xs text-slate-700"><summary class="font-semibold cursor-pointer">Full SARS rate tables and thresholds (2026/27)</summary>
+        <div class="grid md:grid-cols-2 gap-5 mt-4">
+          <div><h3 class="font-bold mb-2">Individual income tax — 2027 tax year</h3><table class="w-full text-left"><tbody>
+            <tr><td class="py-1">R0–R245,100</td><td>18% of taxable income</td></tr><tr><td>R245,101–R383,100</td><td>R44,118 + 26% above R245,100</td></tr><tr><td>R383,101–R530,200</td><td>R79,998 + 31% above R383,100</td></tr><tr><td>R530,201–R695,800</td><td>R125,599 + 36% above R530,200</td></tr><tr><td>R695,801–R887,000</td><td>R185,215 + 39% above R695,800</td></tr><tr><td>R887,001–R1,878,600</td><td>R259,783 + 41% above R887,000</td></tr><tr><td>Above R1,878,600</td><td>R666,339 + 45% above R1,878,600</td></tr>
+            </tbody></table><p class="mt-2">Rebates: primary R17,820; age 65+ R9,765; age 75+ additional R3,249. Tax thresholds: under 65 R99,000; age 65–74 R153,250; age 75+ R171,300.</p></div>
+          <div><h3 class="font-bold mb-2">Qualifying small business corporation</h3><table class="w-full text-left"><tbody><tr><td class="py-1">R0–R99,000</td><td>0%</td></tr><tr><td>R99,001–R365,000</td><td>7% above R99,000</td></tr><tr><td>R365,001–R550,000</td><td>R18,620 + 21% above R365,000</td></tr><tr><td>Above R550,000</td><td>R57,470 + 27% above R550,000</td></tr></tbody></table>
+            <h3 class="font-bold mt-4 mb-2">Turnover tax (qualifying micro-business)</h3><table class="w-full text-left"><tbody><tr><td class="py-1">R0–R600,000</td><td>0%</td></tr><tr><td>R600,001–R950,000</td><td>1% above R600,000</td></tr><tr><td>R950,001–R1,400,000</td><td>R3,500 + 2% above R950,000</td></tr><tr><td>Above R1,400,000</td><td>R12,500 + 3% above R1,400,000</td></tr></tbody></table><p class="mt-2">Annual eligibility ceiling: R2.3m; qualification conditions and exclusions apply.</p></div>
+        </div>
+        <p class="mt-4">VAT: standard rate 15%; registration thresholds from 1 April 2026 are R2.3m compulsory and R120,000 voluntary taxable supplies. UIF: employee and employer each 1%, capped at R17,712 monthly remuneration. SDL: employer 1% if annual payroll exceeds R500,000, subject to exemptions. Company income tax: 27%.</p>
+      </details>
+      <div id="taxEligibilityNote" class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3 text-xs text-amber-950"></div>
+      <p class="text-xs text-slate-500 mt-3">Rates checked 10 November 2026: <a class="text-emerald-700 underline" href="https://www.sars.gov.za/tax-rates/income-tax/companies-trusts-and-small-business-corporations-sbc/" target="_blank" rel="noreferrer">SARS company / SBC rates</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/turnover-tax/" target="_blank" rel="noreferrer">turnover tax</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/" target="_blank" rel="noreferrer">individual tax rates</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/value-added-tax/" target="_blank" rel="noreferrer">VAT</a></p>
+    </div>
+
     <!-- 80/20 Points Estimator -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h3 class="text-base font-bold text-slate-800 mb-1">SBD 6.1 — 80/20 Preference Points Simulator</h3>
-      <p class="text-xs text-slate-500 mb-4">Test how your total bid price stacks up against the lowest competitor using the official National Treasury formula: $P_s = 80 \times (1 - \frac{P_t - P_{\min}}{P_{\min}})$</p>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <h3 class="text-base font-bold text-slate-800 mb-1">SBD 6.1 — Preference Points Simulator</h3>
+      <p class="text-xs text-slate-500 mb-4">Select the 80/20 or 90/10 system stated in the tender and enter only specific-goal points you can evidence. The tender pack controls the evaluation basis and formula.</p>
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1" for="pointsSystem">Tender preference system</label>
+          <select id="pointsSystem" onchange="runPointsSim()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"><option value="80">80/20</option><option value="90">90/10</option></select>
+        </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Your Total Bid Price ($P_t$)</label>
           <input type="number" id="simYourPrice" oninput="runPointsSim()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-slate-50 font-medium" readonly>
@@ -109,8 +198,8 @@
           <input type="number" id="simLowestPrice" value="32000" oninput="runPointsSim()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Your Specific Goals Points (Out of 20)</label>
-          <input type="number" id="simGoalPoints" value="18" min="0" max="20" oninput="runPointsSim()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          <label id="simGoalLabel" class="block text-xs font-semibold text-slate-600 mb-1" for="simGoalPoints">Evidenced specific-goal points (out of 20)</label>
+          <input type="number" id="simGoalPoints" value="0" min="0" max="20" oninput="runPointsSim()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
         </div>
         <div class="bg-slate-900 text-white p-3 rounded-lg flex justify-between items-center">
           <div>
@@ -179,11 +268,13 @@
 
     function recalculateAll() {
       const vatStatus = document.getElementById("vatStatus").value;
+      const enteredRate = parseFloat(document.getElementById("vatRate").value);
+      const vatRate = Math.max(0, Number.isFinite(enteredRate) ? enteredRate : 15) / 100;
       const vatHint = document.getElementById("vatHint");
       if (vatStatus === "vat") {
-        vatHint.innerHTML = 'Enter supplier prices <strong class="text-slate-700">Excluding VAT</strong>. 15% Output VAT is added to the grand total.';
+        vatHint.innerHTML = 'Enter supplier prices <strong class="text-slate-700">Excluding VAT</strong>. ' + (vatRate * 100).toFixed(1) + '% Output VAT is added to the grand total.';
       } else {
-        vatHint.innerHTML = 'Enter supplier prices <strong class="text-slate-700">Including VAT</strong> so you don\'t lose 15% margin.';
+        vatHint.innerHTML = 'Enter supplier prices <strong class="text-slate-700">Including VAT</strong> so you don\'t lose margin. Supplier input VAT credits are not calculated.';
       }
 
       let grandLandedCost = 0;
@@ -193,7 +284,10 @@
       items.forEach((item, index) => {
         const qty = Math.max(1, item.qty);
         const trueLandedUnit = item.unitCost + (item.delivery / qty) + (item.unitCost * (item.buffer / 100));
-        const bidUnitPrice = Math.round(trueLandedUnit * (1 + item.markup / 100) * 100) / 100;
+        const targetRate = Math.max(0, Math.min(99.9, item.markup)) / 100;
+        const bidUnitPrice = Math.round((document.getElementById("pricingMethod").value === "margin"
+          ? trueLandedUnit / (1 - targetRate)
+          : trueLandedUnit * (1 + targetRate)) * 100) / 100;
         const lineTotal = bidUnitPrice * qty;
         const lineCost = trueLandedUnit * qty;
         const lineProfit = lineTotal - lineCost;
@@ -210,8 +304,20 @@
         document.getElementById(`margin-${index}`).innerText = marginPct.toFixed(1) + "%";
       });
 
+      const monthlyPayroll = Math.max(0, parseFloat(document.getElementById("tenderPayroll").value) || 0);
+      const payrollMonths = Math.max(0, parseFloat(document.getElementById("payrollMonths").value) || 0);
+      const payrollEmployees = Math.max(0, parseInt(document.getElementById("payrollEmployees").value, 10) || 0);
+      const annualPayroll = Math.max(0, parseFloat(document.getElementById("annualPayroll").value) || 0);
+      const uifEmployer = payrollEmployees ? Math.min(monthlyPayroll / payrollEmployees, 17712) * payrollEmployees * payrollMonths * 0.01 : 0;
+      const sdlEmployer = annualPayroll > 500000 ? monthlyPayroll * payrollMonths * 0.01 : 0;
+      const payrollCost = monthlyPayroll * payrollMonths + uifEmployer + sdlEmployer;
+      grandLandedCost += payrollCost;
+      grandProfit -= payrollCost;
+      document.getElementById("payrollCostResult").innerText = formatZAR(payrollCost);
+      document.getElementById("payrollLeviesResult").innerText = "Employer UIF " + formatZAR(uifEmployer) + " · SDL " + formatZAR(sdlEmployer);
+
       const overallMargin = grandExclOrBaseBid > 0 ? (grandProfit / grandExclOrBaseBid) * 100 : 0;
-      const vatAmount = vatStatus === "vat" ? grandExclOrBaseBid * 0.15 : 0;
+      const vatAmount = vatStatus === "vat" ? grandExclOrBaseBid * vatRate : 0;
       const finalBidTotal = grandExclOrBaseBid + vatAmount;
 
       document.getElementById("summaryTotalCost").innerText = formatZAR(grandLandedCost);
@@ -219,7 +325,7 @@
       document.getElementById("summaryAvgMargin").innerText = `Effective Gross Margin: ${overallMargin.toFixed(1)}%`;
       document.getElementById("summaryFinalBid").innerText = formatZAR(finalBidTotal);
       document.getElementById("summaryVatLine").innerText = vatStatus === "vat"
-        ? `15% VAT Line on SBD 3.1: ${formatZAR(vatAmount)}`
+        ? `${(vatRate * 100).toFixed(1)}% VAT Line on SBD 3.1: ${formatZAR(vatAmount)}`
         : `VAT Line on SBD 3.1: R 0.00 (Non-VAT Vendor)`;
 
       document.getElementById("simYourPrice").value = finalBidTotal.toFixed(2);
@@ -244,7 +350,10 @@
       items.forEach((item, idx) => {
         const qty = Math.max(1, item.qty);
         const landed = item.unitCost + (item.delivery / qty) + (item.unitCost * (item.buffer / 100));
-        const bidUnit = Math.round(landed * (1 + item.markup / 100) * 100) / 100;
+        const targetRate = Math.max(0, Math.min(99.9, item.markup)) / 100;
+        const bidUnit = Math.round((document.getElementById("pricingMethod").value === "margin"
+          ? landed / (1 - targetRate)
+          : landed * (1 + targetRate)) * 100) / 100;
         const total = bidUnit * qty;
         const profit = total - (landed * qty);
         const margin = total > 0 ? (profit / total) * 100 : 0;
@@ -260,5 +369,119 @@
 
     renderTable();
   </script>
+  <script>
+    (function() {
+      function numberFromMoney(text) {
+        return parseFloat(String(text).replace(/[^0-9.-]/g, "")) || 0;
+      }
+      function fmt(value) {
+        return "R " + (Number(value) || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      function sbcTax(income) {
+        income = Math.max(0, income);
+        if (income <= 99000) return 0;
+        if (income <= 365000) return (income - 99000) * 0.07;
+        if (income <= 550000) return 18620 + (income - 365000) * 0.21;
+        return 57470 + (income - 550000) * 0.27;
+      }
+      function turnoverTax(turnover) {
+        turnover = Math.max(0, turnover);
+        if (turnover <= 600000) return 0;
+        if (turnover <= 950000) return (turnover - 600000) * 0.01;
+        if (turnover <= 1400000) return 3500 + (turnover - 950000) * 0.02;
+        return 12500 + (turnover - 1400000) * 0.03;
+      }
+      function individualTax(income) {
+        var bands = [[245100,0,0.18],[383100,44118,0.26],[530200,79998,0.31],[695800,125599,0.36],[887000,185215,0.39],[1878600,259783,0.41],[Infinity,666339,0.45]];
+        income = Math.max(0, income);
+        var tax = 0;
+        for (var i = 0; i < bands.length; i++) {
+          if (income <= bands[i][0]) {
+            var lower = i === 0 ? 0 : bands[i - 1][0];
+            tax = bands[i][1] + Math.max(0, income - lower) * bands[i][2];
+            break;
+          }
+        }
+        var age = document.getElementById("individualAge").value;
+        var rebate = 17820 + (age === "65" ? 9765 : age === "75" ? 13014 : 0);
+        return Math.max(0, tax - rebate);
+      }
+      function updateTaxPlanner() {
+        var regime = document.getElementById("taxRegime").value;
+        var profit = numberFromMoney(document.getElementById("summaryTotalProfit").innerText);
+        var bid = numberFromMoney(document.getElementById("summaryFinalBid").innerText);
+        var enteredRate = parseFloat(document.getElementById("vatRate").value);
+        var vatRate = Math.max(0, Number.isFinite(enteredRate) ? enteredRate : 15) / 100;
+        var vendor = document.getElementById("vatStatus").value === "vat";
+        var revenue = vendor && vatRate > 0 ? bid / (1 + vatRate) : bid;
+        var before = Math.max(0, parseFloat(document.getElementById("taxableBefore").value) || 0);
+        var turnoverBefore = Math.max(0, parseFloat(document.getElementById("taxableTurnoverBefore").value) || 0);
+        var rate = Math.max(0, parseFloat(document.getElementById("customTaxRate").value) || 0) / 100;
+        var reserve = 0;
+        if (regime === "company") reserve = Math.max(0, profit) * 0.27;
+        if (regime === "sbc") reserve = sbcTax(before + Math.max(0, profit)) - sbcTax(before);
+        if (regime === "individual") reserve = individualTax(before + Math.max(0, profit)) - individualTax(before);
+        if (regime === "turnover") reserve = turnoverTax(turnoverBefore + Math.max(0, revenue)) - turnoverTax(turnoverBefore);
+        if (regime === "custom") reserve = Math.max(0, profit) * rate;
+        reserve = Math.max(0, reserve);
+        document.getElementById("taxReserve").innerText = fmt(reserve);
+        document.getElementById("afterTaxProfit").innerText = "Estimated profit after reserve: " + fmt(profit - reserve);
+        document.getElementById("customTaxRate").parentElement.style.display = regime === "custom" ? "" : "none";
+        var descriptions = {
+          company: "Estimate uses the current 27% company rate on positive tender profit; tax adjustments and loss carry-forwards are not modelled.",
+          sbc: "SBC rates apply only when your entity meets SARS qualification rules. Current brackets: 0% to R99,000; 7% to R365,000; 21% to R550,000; then 27%.",
+          individual: "Uses the 2027 individual brackets and age rebates. Existing annual taxable income is used to estimate the incremental tax from this bid.",
+          turnover: "Turnover tax applies to taxable turnover, not profit. 2026/27 bands: 0% to R600,000; 1% to R950,000; 2% to R1.4m; then 3%. Eligibility ceiling R2.3m.",
+          custom: "Your custom percentage is applied to positive tender profit."
+        };
+        document.getElementById("taxEligibilityNote").innerText = descriptions[regime] + " Verify your actual regime, deductions, turnover definition and eligibility with SARS or a tax practitioner.";
+        var cards = [
+          ["VAT", "15% standard rate; compulsory threshold R2.3m; voluntary threshold R120,000"],
+          ["Company income tax", "27% standard rate for 2026/27"],
+          ["Qualifying SBC", "Progressive 0%–27% (2026/27)"],
+          ["Turnover tax", "Progressive 0%–3%; R2.3m annual ceiling"],
+          ["Individual tax", "2027 tax year: 18%–45%; rebates depend on age"]
+        ];
+        document.getElementById("taxRateCards").innerHTML = cards.map(function(card) {
+          return '<div class="border rounded-lg bg-slate-50 p-3"><strong class="block text-slate-800">' + card[0] + '</strong><span class="text-slate-600">' + card[1] + '</span></div>';
+        }).join("");
+        var sales = Math.max(0, parseFloat(document.getElementById("vatSales").value) || 0);
+        var threshold = "Current VAT threshold: compulsory registration above R2.3m taxable supplies in an uninterrupted 12-month period; voluntary registration may be available above R120,000.";
+        if (sales > 2300000) threshold = vendor ? "Entered sales exceed the R2.3m compulsory-registration threshold. Verify your VAT registration and filing position with SARS." : "Entered sales exceed the R2.3m compulsory-registration threshold. Confirm VAT registration requirements with SARS before bidding.";
+        else if (sales > 120000 && !vendor) threshold = "Entered sales are above the R120,000 voluntary-registration threshold and below the compulsory threshold. Check with SARS whether voluntary registration suits you.";
+        document.getElementById("vatThresholdNote").innerText = threshold;
+        var checks = Array.from(document.querySelectorAll(".tender-check"));
+        var complete = checks.filter(function(box) { return box.checked; }).length;
+        document.getElementById("checkProgressText").innerText = complete + " / " + checks.length;
+        document.getElementById("checkProgressBar").style.width = (checks.length ? complete / checks.length * 100 : 0) + "%";
+        var outputVat = vendor ? bid - revenue : 0;
+        document.getElementById("summaryVatLine").innerText = vendor ? (vatRate * 100).toFixed(1) + "% VAT Line on SBD 3.1: " + fmt(outputVat) : "VAT Line on SBD 3.1: R 0.00 (Non-VAT Vendor)";
+      }
+      var originalRecalculate = window.recalculateAll;
+      window.recalculateAll = function() {
+        originalRecalculate();
+        updateTaxPlanner();
+      };
+      window.runPointsSim = function() {
+        var price = parseFloat(document.getElementById("simYourPrice").value) || 0;
+        var lowest = parseFloat(document.getElementById("simLowestPrice").value) || 0;
+        var weight = parseFloat(document.getElementById("pointsSystem").value) || 80;
+        var maxGoals = 100 - weight;
+        var goals = Math.min(maxGoals, Math.max(0, parseFloat(document.getElementById("simGoalPoints").value) || 0));
+        var points = lowest > 0 && price > 0 ? weight * (1 - ((price - lowest) / lowest)) : 0;
+        points = Math.max(0, Math.min(weight, points));
+        document.getElementById("simGoalPoints").max = maxGoals;
+        document.getElementById("simGoalLabel").innerText = "Your Specific Goals Points (Out of " + maxGoals + ")";
+        document.getElementById("simPricePoints").innerText = "Price: " + points.toFixed(2) + " / " + weight;
+        document.getElementById("simTotalScore").innerText = (points + goals).toFixed(2) + " pts";
+      };
+      document.querySelectorAll(".tender-check, #vatRate, #vatSales, #taxRegime, #taxableBefore, #taxableTurnoverBefore, #customTaxRate, #individualAge, #pointsSystem").forEach(function(input) {
+        input.addEventListener("input", function() { window.recalculateAll(); });
+        input.addEventListener("change", function() { window.recalculateAll(); });
+      });
+      window.recalculateAll();
+    })();
+  </script>
 </body>
 </html>
+
