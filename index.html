@@ -50,7 +50,10 @@
           Print / Save PDF
         </button>
       </div>
-      <p id="saveStatus" class="text-xs text-slate-300" role="status" aria-live="polite">Progress is saved on this device.</p>
+      <div class="space-y-1">
+        <p id="saveStatus" class="text-xs text-slate-300" role="status" aria-live="polite">Progress is saved on this device.</p>
+        <p id="offlineStatus" class="text-xs text-slate-300" role="status" aria-live="polite">Offline cache is preparing…</p>
+      </div>
     </div>
 
     <!-- Settings & Summary Bar -->
@@ -942,11 +945,45 @@
       }).join("\r\n"), "text/csv;charset=utf-8");
     }
 
+    function updateOfflineStatus() {
+      const status = document.getElementById("offlineStatus");
+      const controlled = navigator.serviceWorker && navigator.serviceWorker.controller;
+      if (!navigator.onLine) {
+        status.textContent = controlled ? "Offline — cached planner is available." : "Offline — open the app online once to cache it.";
+      } else {
+        status.textContent = controlled ? "Offline cache ready on this device." : "Offline cache is installing…";
+      }
+      status.className = "text-xs text-slate-300";
+    }
+
+    function registerOfflineCache() {
+      const status = document.getElementById("offlineStatus");
+      if (!("serviceWorker" in navigator)) {
+        status.textContent = "Offline caching is available on the HTTPS site.";
+        return;
+      }
+      if (location.protocol !== "https:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+        status.textContent = "Offline caching requires HTTPS.";
+        return;
+      }
+      window.addEventListener("online", updateOfflineStatus);
+      window.addEventListener("offline", updateOfflineStatus);
+      navigator.serviceWorker.addEventListener("controllerchange", updateOfflineStatus);
+      navigator.serviceWorker.register("/service-worker.js").then(function() {
+        updateOfflineStatus();
+      }).catch(function(error) {
+        console.error("Could not register the offline cache:", error);
+        status.textContent = "Offline cache unavailable: " + error.message;
+        status.className = "text-xs text-rose-200";
+      });
+    }
+
     restoreProject();
     renderTable();
     saveProject();
     document.addEventListener("input", queueProjectSave);
     document.addEventListener("change", queueProjectSave);
+    registerOfflineCache();
   </script>
   <script>
     (function() {

@@ -8,13 +8,17 @@ Open `index.html` in a modern browser. No build step or server is required.
 
 ## Deploy
 
-This is a static site. Vercel can serve the repository root directly with no build command and no output directory. The page currently loads Tailwind CSS from the public CDN at `https://cdn.tailwindcss.com`, so styling requires an internet connection.
+This is a static site. Vercel can serve the repository root directly with no build command and no output directory. On its first visit while online, the app installs a service worker that caches the planner shell and Tailwind CSS for offline use. The offline cache requires HTTPS (or localhost during development); open the app online once before using it offline.
 
 The production hostname is `https://marginrfqcalculator.dpdns.org/`. The page declares that HTTPS URL as its canonical, and `robots.txt` points crawlers to `sitemap.xml`. The HTTP-to-HTTPS redirect is intentional; the canonical HTTPS page should return `200 OK`. After deploying indexing changes, submit the sitemap in Google Search Console and request indexing for the canonical URL. Search Console may need to recrawl before its reported status updates.
 
 ## Notes
 
 The calculator is an estimating aid. Verify current procurement and tax requirements before submitting a quotation.
+
+## Offline use
+
+The service worker caches the app shell and Tailwind CSS, but does not cache RFQ text, project data, or PDF/OCR libraries. Saved planner progress remains in this browser's local storage. PDF scanning and OCR still need an internet connection to load their libraries and language data. After deploying a service-worker update, visit the site online to install it before going offline.
 
 ## Tender planning features
 
