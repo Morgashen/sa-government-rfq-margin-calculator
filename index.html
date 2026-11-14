@@ -93,12 +93,16 @@
       <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
         <div>
           <h2 id="assistantTitle" class="text-base font-bold text-slate-800 mb-1">Tender document assistant</h2>
-          <p class="text-xs text-slate-500">Paste selectable text from an RFQ or upload a .txt/.csv file. This local assistant highlights likely requirements; it does not send documents anywhere.</p>
+          <p class="text-xs text-slate-500">Paste tender text or upload a PDF, .txt or .csv file. PDF text extraction and optional English OCR run in this browser; your document is not uploaded.</p>
         </div>
         <label class="no-print inline-flex items-center gap-2 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium cursor-pointer hover:bg-slate-50">
-          Upload text file
-          <input id="rfqFile" type="file" accept=".txt,.csv,text/plain,text/csv" class="sr-only" onchange="loadRfqFile(event)">
+          Upload RFQ file
+          <input id="rfqFile" type="file" accept=".pdf,.txt,.csv,application/pdf,text/plain,text/csv" class="sr-only" onchange="loadRfqFile(event)">
         </label>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mb-3 no-print">
+        <button id="runPdfOcr" type="button" onclick="runPdfOcr()" class="hidden bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-3 py-2 rounded-lg">Run OCR on scanned pages (English)</button>
+        <p id="rfqFileStatus" class="text-xs text-slate-600" role="status" aria-live="polite"></p>
       </div>
       <label for="rfqText" class="block text-xs font-semibold text-slate-600 mb-1">RFQ / tender text</label>
       <textarea id="rfqText" rows="7" maxlength="200000" placeholder="Paste text copied from the tender notice or searchable PDF. Do not paste passwords, banking credentials or other secrets." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
@@ -108,7 +112,7 @@
         <button id="useDetectedItems" onclick="applyDetectedItems()" class="hidden bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg">Use detected line items</button>
         <button onclick="exportSbd31()" class="border border-emerald-700 text-emerald-800 hover:bg-emerald-50 text-sm font-medium px-4 py-2 rounded-lg">Download SBD 3.1 price schedule</button>
       </div>
-      <p class="text-xs text-slate-500 mt-3">For scanned PDFs, use your device’s OCR or copy text from an accessible version first. Extracted items start with zero supplier cost; check quantities, wording, units, addenda, and every mandatory condition against the official tender pack.</p>
+      <p class="text-xs text-slate-500 mt-3">PDFs up to 25 MB and 100 pages are supported. OCR is optional for pages without selectable text and uses English. The app downloads its PDF/OCR libraries and OCR language data from public CDNs; document processing stays in this browser. Extracted text is included in this device’s saved progress. Verify all results against the official tender pack and addenda.</p>
       <div id="analysisResults" class="mt-4" aria-live="polite"></div>
     </section>
 
@@ -550,24 +554,241 @@
       }
     }
 
+    const pdfJsVersion = "6.5.438";
+    const tesseractVersion = "7.0.0";
+    const maxPdfSize = 25 * 1024 * 1024;
+    const maxPdfPages = 100;
+    const maxExtractedText = 200000;
+    let pdfJsPromise;
+    let tesseractPromise;
+    let pendingOcrFile = null;
+    let pendingOcrPages = [];
+    let extractedPdfPages = [];
+
+    function setRfqFileStatus(message, isError) {
+      const status = document.getElementById("rfqFileStatus");
+      status.textContent = message;
+      status.className = isError ? "text-xs text-rose-700" : "text-xs text-slate-600";
+    }
+
+    function loadPdfJs() {
+      if (!pdfJsPromise) {
+        const baseUrl = "https://cdn.jsdelivr.net/npm/pdfjs-dist@" + pdfJsVersion + "/build/";
+        pdfJsPromise = import(baseUrl + "pdf.mjs").then(function(pdfjs) {
+          pdfjs.GlobalWorkerOptions.workerSrc = baseUrl + "pdf.worker.mjs";
+          return pdfjs;
+        }).catch(function(error) {
+          pdfJsPromise = null;
+          throw new Error("Could not load the PDF reader from the CDN: " + error.message);
+        });
+      }
+      return pdfJsPromise;
+    }
+
+    function loadTesseract() {
+      if (window.Tesseract) return Promise.resolve(window.Tesseract);
+      if (!tesseractPromise) {
+        tesseractPromise = new Promise(function(resolve, reject) {
+          const script = document.createElement("script");
+          script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@" + tesseractVersion + "/dist/tesseract.min.js";
+          script.async = true;
+          script.onload = function() {
+            if (window.Tesseract) resolve(window.Tesseract);
+            else reject(new Error("The OCR library loaded without its browser API."));
+          };
+          script.onerror = function() { reject(new Error("Could not load the OCR library from the CDN.")); };
+          document.head.appendChild(script);
+        }).catch(function(error) {
+          tesseractPromise = null;
+          throw error;
+        });
+      }
+      return tesseractPromise;
+    }
+
+    async function extractPdfPages(file) {
+      const pdfjs = await loadPdfJs();
+      const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
+      const pdf = await loadingTask.promise;
+      try {
+        if (pdf.numPages > maxPdfPages) {
+          throw new Error("This PDF has " + pdf.numPages + " pages. Split it into files with no more than " + maxPdfPages + " pages.");
+        }
+        const pages = [];
+        const pagesForOcr = [];
+        let remainingCharacters = maxExtractedText;
+        let truncated = false;
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+          setRfqFileStatus("Extracting selectable text from PDF page " + pageNumber + " of " + pdf.numPages + "…", false);
+          const page = await pdf.getPage(pageNumber);
+          try {
+            const content = await page.getTextContent();
+            const rawText = content.items.map(function(item) {
+              if (typeof item.str !== "string") return "";
+              return item.str + (item.hasEOL ? "\n" : " ");
+            }).join("").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+            const pageText = rawText.slice(0, remainingCharacters);
+            pages.push(pageText);
+            remainingCharacters -= pageText.length;
+            if (pageText.length < rawText.length) truncated = true;
+            else if (pageText.trim().length < 80) pagesForOcr.push(pageNumber);
+          } finally {
+            page.cleanup();
+          }
+        }
+        return { pages: pages, pagesForOcr: pagesForOcr, truncated: truncated };
+      } finally {
+        await loadingTask.destroy();
+      }
+    }
+
+    function combinePdfPages(pages) {
+      return pages.map(function(text, index) {
+        return text.trim() ? "[Page " + (index + 1) + "]\n" + text.trim() : "";
+      }).filter(Boolean).join("\n\n").slice(0, maxExtractedText);
+    }
+
     async function loadRfqFile(event) {
       const file = event.target.files && event.target.files[0];
       event.target.value = "";
       if (!file) return;
+      const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+      event.target.disabled = true;
       try {
+        if (isPdf) {
+          if (file.size > maxPdfSize) throw new Error("PDF files must be 25 MB or smaller.");
+          pendingOcrFile = null;
+          pendingOcrPages = [];
+          extractedPdfPages = [];
+          document.getElementById("runPdfOcr").classList.add("hidden");
+          setRfqFileStatus("Opening PDF…", false);
+          const result = await extractPdfPages(file);
+          extractedPdfPages = result.pages;
+          pendingOcrPages = result.pagesForOcr;
+          pendingOcrFile = pendingOcrPages.length ? file : null;
+          document.getElementById("rfqText").value = combinePdfPages(result.pages);
+          if (document.getElementById("rfqText").value.trim()) analyzeTender();
+          else {
+            document.getElementById("analysisResults").replaceChildren();
+            queueProjectSave();
+          }
+          document.getElementById("runPdfOcr").classList.toggle("hidden", !pendingOcrFile);
+          const pageSummary = pendingOcrPages.length
+            ? " " + pendingOcrPages.length + " page(s) appear to be scans; run OCR if needed."
+            : "";
+          const truncationNote = result.truncated ? " Extracted text was capped at 200,000 characters." : "";
+          setRfqFileStatus("Read " + result.pages.length + " PDF page(s)." + pageSummary + truncationNote, false);
+          return;
+        }
+        if (!/\.txt$/i.test(file.name) && !/\.csv$/i.test(file.name)) {
+          throw new Error("Choose a PDF, .txt or .csv file.");
+        }
         if (file.size > 200000) throw new Error("Text files must be 200 KB or smaller.");
+        pendingOcrFile = null;
+        pendingOcrPages = [];
+        extractedPdfPages = [];
+        document.getElementById("runPdfOcr").classList.add("hidden");
         document.getElementById("rfqText").value = await file.text();
+        setRfqFileStatus("Read text file: " + file.name, false);
         analyzeTender();
         queueProjectSave();
       } catch (error) {
-        document.getElementById("analysisResults").textContent = "Could not read this file: " + error.message;
+        setRfqFileStatus("Could not read this file: " + error.message, true);
+      } finally {
+        event.target.disabled = false;
       }
+    }
+
+    async function runPdfOcr() {
+      if (!pendingOcrFile || !pendingOcrPages.length) return;
+      const button = document.getElementById("runPdfOcr");
+      const fileInput = document.getElementById("rfqFile");
+      const file = pendingOcrFile;
+      const pageNumbers = pendingOcrPages.slice();
+      button.disabled = true;
+      fileInput.disabled = true;
+      let worker = null;
+      let loadingTask = null;
+      let errorMessage = "";
+      const pages = extractedPdfPages.slice();
+      let activeOcrPage = 0;
+      try {
+        setRfqFileStatus("Loading English OCR engine and language data…", false);
+        const Tesseract = await loadTesseract();
+        const pdfjs = await loadPdfJs();
+        worker = await Tesseract.createWorker("eng", 1, {
+          logger: function(message) {
+            if (message.status === "recognizing text") {
+              setRfqFileStatus("Recognizing scanned PDF page " + activeOcrPage + " (" +
+                Math.round((message.progress || 0) * 100) + "%)…", false);
+            } else if (message.status) {
+              setRfqFileStatus("OCR: " + message.status + "…", false);
+            }
+          }
+        });
+        loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
+        const pdf = await loadingTask.promise;
+        const totalOcrPages = pageNumbers.length;
+        for (let index = 0; index < totalOcrPages; index += 1) {
+          const pageNumber = pageNumbers[index];
+          activeOcrPage = pageNumber;
+          setRfqFileStatus("Rendering scanned PDF page " + pageNumber + " (" + (index + 1) + " of " + totalOcrPages + ")…", false);
+          const page = await pdf.getPage(pageNumber);
+          const baseViewport = page.getViewport({ scale: 1 });
+          const pixelCount = baseViewport.width * baseViewport.height;
+          if (!Number.isFinite(pixelCount) || pixelCount <= 0) throw new Error("This PDF page has invalid dimensions.");
+          const scale = Math.min(1.6, Math.sqrt(12000000 / pixelCount));
+          if (!Number.isFinite(scale) || scale <= 0) throw new Error("This PDF page is too large to OCR safely.");
+          const viewport = page.getViewport({ scale: scale });
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.ceil(viewport.width);
+          canvas.height = Math.ceil(viewport.height);
+          try {
+            const context = canvas.getContext("2d", { alpha: false });
+            if (!context) throw new Error("Could not create a canvas to render this PDF page.");
+            context.fillStyle = "#ffffff";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            const result = await worker.recognize(canvas);
+            pages[pageNumber - 1] = result.data.text.trim();
+          } finally {
+            canvas.width = 0;
+            canvas.height = 0;
+            page.cleanup();
+          }
+        }
+        document.getElementById("rfqText").value = combinePdfPages(pages);
+        analyzeTender();
+        setRfqFileStatus("OCR complete. Review the extracted text and verify it against the original PDF.", false);
+        pendingOcrFile = null;
+        pendingOcrPages = [];
+        document.getElementById("runPdfOcr").classList.add("hidden");
+      } catch (error) {
+        errorMessage = "OCR failed: " + error.message;
+      } finally {
+        if (worker) {
+          try { await worker.terminate(); }
+          catch (error) { if (!errorMessage) errorMessage = "Could not stop the OCR worker: " + error.message; }
+        }
+        if (loadingTask) {
+          try { await loadingTask.destroy(); }
+          catch (error) { if (!errorMessage) errorMessage = "Could not close the PDF reader: " + error.message; }
+        }
+        button.disabled = false;
+        fileInput.disabled = false;
+      }
+      if (errorMessage) setRfqFileStatus(errorMessage, true);
     }
 
     function clearTenderText() {
       document.getElementById("rfqText").value = "";
       document.getElementById("analysisResults").replaceChildren();
       document.getElementById("useDetectedItems").classList.add("hidden");
+      document.getElementById("runPdfOcr").classList.add("hidden");
+      pendingOcrFile = null;
+      pendingOcrPages = [];
+      extractedPdfPages = [];
+      setRfqFileStatus("", false);
       detectedTenderItems = [];
       queueProjectSave();
     }
