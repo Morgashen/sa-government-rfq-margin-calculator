@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SA Government Tender Bid Planner</title>
+  <meta name="description" content="Plan South African government tender bids with RFQ pricing, VAT and tax estimates, preference points, document readiness, and tender progress saving.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://marginrfqcalculator.dpdns.org/">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3798136929908284" crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-WXPLDRLV"></script>
   <script>
@@ -29,6 +33,16 @@
         <p class="text-slate-300 text-sm mt-1">Check readiness, build a defensible price, estimate current tax reserves and model preference points before submission.</p>
       </div>
       <div class="flex flex-wrap gap-2 no-print">
+        <button onclick="saveProject()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition">
+          Save progress
+        </button>
+        <button onclick="exportProject()" class="bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition">
+          Download project
+        </button>
+        <button onclick="document.getElementById('projectFile').click()" class="bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition">
+          Load project
+        </button>
+        <input id="projectFile" type="file" accept=".json,application/json" class="hidden" onchange="importProject(event)">
         <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow">
           Export to Excel (.CSV)
         </button>
@@ -36,6 +50,7 @@
           Print / Save PDF
         </button>
       </div>
+      <p id="saveStatus" class="text-xs text-slate-300" role="status" aria-live="polite">Progress is saved on this device.</p>
     </div>
 
     <!-- Settings & Summary Bar -->
@@ -73,6 +88,29 @@
         <span id="summaryVatLine" class="text-xs text-emerald-300">VAT Line on SBD 3.1: R 0.00 (N/A)</span>
       </div>
     </div>
+
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6" aria-labelledby="assistantTitle">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
+        <div>
+          <h2 id="assistantTitle" class="text-base font-bold text-slate-800 mb-1">Tender document assistant</h2>
+          <p class="text-xs text-slate-500">Paste selectable text from an RFQ or upload a .txt/.csv file. This local assistant highlights likely requirements; it does not send documents anywhere.</p>
+        </div>
+        <label class="no-print inline-flex items-center gap-2 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium cursor-pointer hover:bg-slate-50">
+          Upload text file
+          <input id="rfqFile" type="file" accept=".txt,.csv,text/plain,text/csv" class="sr-only" onchange="loadRfqFile(event)">
+        </label>
+      </div>
+      <label for="rfqText" class="block text-xs font-semibold text-slate-600 mb-1">RFQ / tender text</label>
+      <textarea id="rfqText" rows="7" maxlength="200000" placeholder="Paste text copied from the tender notice or searchable PDF. Do not paste passwords, banking credentials or other secrets." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+      <div class="flex flex-wrap gap-2 mt-3 no-print">
+        <button onclick="analyzeTender()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg">Analyse requirements</button>
+        <button onclick="clearTenderText()" class="border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg">Clear text</button>
+        <button id="useDetectedItems" onclick="applyDetectedItems()" class="hidden bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg">Use detected line items</button>
+        <button onclick="exportSbd31()" class="border border-emerald-700 text-emerald-800 hover:bg-emerald-50 text-sm font-medium px-4 py-2 rounded-lg">Download SBD 3.1 price schedule</button>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">For scanned PDFs, use your device’s OCR or copy text from an accessible version first. Extracted items start with zero supplier cost; check quantities, wording, units, addenda, and every mandatory condition against the official tender pack.</p>
+      <div id="analysisResults" class="mt-4" aria-live="polite"></div>
+    </section>
 
     <!-- Pre-bid readiness -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
@@ -230,6 +268,12 @@
       return "R " + num.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, function(character) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character];
+      });
+    }
+
     function renderTable() {
       const tbody = document.getElementById("rfqRows");
       tbody.innerHTML = "";
@@ -238,7 +282,7 @@
         tr.className = "hover:bg-slate-50/80 transition";
         tr.innerHTML = `
           <td class="p-3 font-medium text-slate-500">${index + 1}</td>
-          <td class="p-3"><input type="text" value="${item.desc}" oninput="updateItem(${index}, 'desc', this.value)" class="w-full border border-slate-200 rounded px-2 py-1.5 text-sm focus:border-emerald-500 outline-none"></td>
+          <td class="p-3"><input type="text" value="${escapeHtml(item.desc)}" oninput="updateItem(${index}, 'desc', this.value)" class="w-full border border-slate-200 rounded px-2 py-1.5 text-sm focus:border-emerald-500 outline-none"></td>
           <td class="p-3 min-w-[6rem]"><input type="number" min="1" value="${item.qty}" oninput="updateItem(${index}, 'qty', parseFloat(this.value)||1)" class="block w-full min-w-[4rem] border border-slate-300 bg-white text-slate-900 rounded px-2 py-1.5 text-sm text-right tabular-nums"></td>
           <td class="p-3"><input type="number" step="0.01" value="${item.unitCost}" oninput="updateItem(${index}, 'unitCost', parseFloat(this.value)||0)" class="w-full border border-slate-200 rounded px-2 py-1.5 text-sm"></td>
           <td class="p-3"><input type="number" step="0.01" value="${item.delivery}" oninput="updateItem(${index}, 'delivery', parseFloat(this.value)||0)" class="w-full border border-slate-200 rounded px-2 py-1.5 text-sm"></td>
@@ -372,14 +416,322 @@
       a.href = url;
       a.download = "SA_Government_RFQ_Pricing_Calculator.csv";
       a.click();
+      window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
     }
 
+    const projectStorageKey = "sa-government-rfq-margin-calculator-v1";
+    const projectFieldIds = [
+      "vatStatus", "vatRate", "vatSales", "pricingMethod", "tenderPayroll",
+      "payrollEmployees", "payrollMonths", "annualPayroll", "taxRegime",
+      "taxableBefore", "customTaxRate", "taxableTurnoverBefore", "individualAge",
+      "pointsSystem", "simLowestPrice", "simGoalPoints"
+    ];
+    let saveTimer;
+
+    function setSaveStatus(message, isError) {
+      const status = document.getElementById("saveStatus");
+      status.textContent = message;
+      status.className = isError ? "text-xs text-rose-200" : "text-xs text-slate-300";
+    }
+
+    function projectData() {
+      const fields = {};
+      projectFieldIds.forEach(function(id) {
+        fields[id] = document.getElementById(id).value;
+      });
+      return {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        fields: fields,
+        items: items,
+        checks: Array.from(document.querySelectorAll(".tender-check")).map(function(box) { return box.checked; }),
+        rfqText: document.getElementById("rfqText").value
+      };
+    }
+
+    function validateProject(data) {
+      if (!data || data.version !== 1 || !data.fields || !Array.isArray(data.items) ||
+          !Array.isArray(data.checks) || typeof data.rfqText !== "string" ||
+          data.rfqText.length > 200000 || data.items.length < 1 || data.items.length > 200) {
+        throw new Error("This file is not a supported tender planner project.");
+      }
+      const validFields = projectFieldIds.every(function(id) {
+        return typeof data.fields[id] === "string" && data.fields[id].length <= 100;
+      });
+      const validItems = data.items.every(function(item) {
+        return item && typeof item.desc === "string" && item.desc.length <= 500 &&
+          ["qty", "unitCost", "delivery", "buffer", "markup"].every(function(key) {
+            return Number.isFinite(Number(item[key])) && Number(item[key]) >= 0;
+          });
+      });
+      if (!validFields || data.checks.length !== document.querySelectorAll(".tender-check").length ||
+          !validItems || !data.checks.every(function(value) { return typeof value === "boolean"; })) {
+        throw new Error("The project contains invalid line items or checklist data.");
+      }
+      return data;
+    }
+
+    function applyProject(data) {
+      validateProject(data);
+      projectFieldIds.forEach(function(id) {
+        if (Object.prototype.hasOwnProperty.call(data.fields, id)) {
+          document.getElementById(id).value = data.fields[id];
+        }
+      });
+      items = data.items.map(function(item) {
+        return {
+          desc: item.desc,
+          qty: Number(item.qty),
+          unitCost: Number(item.unitCost),
+          delivery: Number(item.delivery),
+          buffer: Number(item.buffer),
+          markup: Number(item.markup)
+        };
+      });
+      document.querySelectorAll(".tender-check").forEach(function(box, index) {
+        box.checked = data.checks[index] === true;
+      });
+      document.getElementById("rfqText").value = data.rfqText;
+      renderTable();
+      if (data.rfqText.trim()) analyzeTender();
+    }
+
+    function saveProject() {
+      try {
+        localStorage.setItem(projectStorageKey, JSON.stringify(projectData()));
+        setSaveStatus("Saved on this device at " + new Date().toLocaleTimeString(), false);
+      } catch (error) {
+        setSaveStatus("Could not save on this device: " + error.message, true);
+      }
+    }
+
+    function queueProjectSave() {
+      window.clearTimeout(saveTimer);
+      saveTimer = window.setTimeout(saveProject, 300);
+    }
+
+    function restoreProject() {
+      try {
+        const saved = localStorage.getItem(projectStorageKey);
+        if (saved) {
+          applyProject(JSON.parse(saved));
+          setSaveStatus("Restored saved progress from this device.", false);
+        }
+      } catch (error) {
+        setSaveStatus("Saved progress could not be restored: " + error.message, true);
+      }
+    }
+
+    function downloadFile(filename, content, type) {
+      const url = URL.createObjectURL(new Blob([content], { type: type }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    }
+
+    function exportProject() {
+      downloadFile("SA_Tender_Planner_Project.json", JSON.stringify(projectData(), null, 2), "application/json");
+    }
+
+    async function importProject(event) {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = "";
+      if (!file) return;
+      try {
+        if (file.size > 2000000) throw new Error("Project files must be smaller than 2 MB.");
+        const imported = JSON.parse(await file.text());
+        applyProject(imported);
+        saveProject();
+        setSaveStatus("Project loaded and saved on this device.", false);
+      } catch (error) {
+        setSaveStatus("Could not load project: " + error.message, true);
+      }
+    }
+
+    async function loadRfqFile(event) {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = "";
+      if (!file) return;
+      try {
+        if (file.size > 200000) throw new Error("Text files must be 200 KB or smaller.");
+        document.getElementById("rfqText").value = await file.text();
+        analyzeTender();
+        queueProjectSave();
+      } catch (error) {
+        document.getElementById("analysisResults").textContent = "Could not read this file: " + error.message;
+      }
+    }
+
+    function clearTenderText() {
+      document.getElementById("rfqText").value = "";
+      document.getElementById("analysisResults").replaceChildren();
+      document.getElementById("useDetectedItems").classList.add("hidden");
+      detectedTenderItems = [];
+      queueProjectSave();
+    }
+
+    let detectedTenderItems = [];
+
+    function analyzeTender() {
+      const sourceText = document.getElementById("rfqText").value.slice(0, 200000);
+      const results = document.getElementById("analysisResults");
+      const requirements = [];
+      const lines = sourceText.split(/\r?\n/).map(function(line) { return line.trim(); }).filter(Boolean);
+      function findLine(pattern) {
+        return lines.find(function(line) { return pattern.test(line); }) || "";
+      }
+      function addRequirement(label, pattern) {
+        const source = findLine(pattern);
+        if (source) requirements.push({ label: label, source: source });
+      }
+
+      addRequirement("Closing date or submission deadline", /\b(closing|submission|deadline|due date)\b/i);
+      addRequirement("Compulsory briefing or site visit", /\b(compulsory|mandatory|required)\b.*\b(briefing|site visit|site meeting)\b|\b(briefing|site visit|site meeting)\b.*\b(compulsory|mandatory|required)\b/i);
+      addRequirement("Preference-point system", /\b(80\s*\/\s*20|90\s*\/\s*10|80-20|90-10)\b/i);
+      const preferenceLine = findLine(/\b(80\s*\/\s*20|90\s*\/\s*10|80-20|90-10)\b/i);
+      if (preferenceLine) {
+        document.getElementById("pointsSystem").value = /\b90\s*[-/]\s*10\b/i.test(preferenceLine) ? "90" : "80";
+        runPointsSim();
+      }
+      addRequirement("Delivery or contract period", /\b(delivery|contract|service|completion)\b.*\b(days?|weeks?|months?|years?|date|period)\b/i);
+      addRequirement("Bid security or guarantee", /\b(bid security|tender security|bid bond|performance guarantee|bank guarantee)\b/i);
+      addRequirement("Functionality or minimum technical threshold", /\b(functionality|minimum threshold|technical evaluation|minimum score)\b/i);
+
+      [
+        ["SBD 1 — invitation to bid", /\bSBD\s*[- ]?1\b/i],
+        ["SBD 3.1 — pricing schedule", /\bSBD\s*[- ]?3(?:\.1)?\b/i],
+        ["SBD 4 — declaration of interest", /\bSBD\s*[- ]?4\b/i],
+        ["SBD 6.1 — preference points", /\bSBD\s*[- ]?6\.1\b/i],
+        ["SBD 9 — independent bid determination", /\bSBD\s*[- ]?9\b/i],
+        ["MBD 4 — declaration of interest", /\bMBD\s*[- ]?4\b/i],
+        ["MBD 6.1 — preference points", /\bMBD\s*[- ]?6\.1\b/i],
+        ["Tax compliance / SARS PIN", /\b(tax compliance|SARS PIN|TCS PIN)\b/i],
+        ["Central Supplier Database (CSD)", /\b(CSD|Central Supplier Database)\b/i],
+        ["B-BBEE evidence", /\b(B-?BBEE|broad-based black economic empowerment)\b/i],
+        ["Company registration documents", /\b(CIPC|company registration|founding statement)\b/i],
+        ["Proof of banking details", /\b(bank confirmation|proof of banking|bank account)\b/i],
+        ["Insurance or COIDA evidence", /\b(insurance|COIDA|letter of good standing)\b/i],
+        ["Municipal rates and taxes clearance", /\b(municipal rates|rates and taxes|municipal account)\b/i],
+        ["CIDB grading evidence", /\bCIDB\b/i],
+        ["Reference letters or past-experience evidence", /\b(reference letters?|past experience|previous contracts?)\b/i],
+        ["OEM / manufacturer authorisation", /\b(OEM|manufacturer authori[sz]ation)\b/i]
+      ].forEach(function(documentRule) {
+        addRequirement(documentRule[0], documentRule[1]);
+      });
+
+      const extraCues = lines.filter(function(line) {
+        return /\b(must submit|shall submit|required to submit|mandatory document|failure to|non-compliant|disqualif)\b/i.test(line) &&
+          !requirements.some(function(requirement) { return requirement.source === line; });
+      }).slice(0, 8);
+      extraCues.forEach(function(source) { requirements.push({ label: "Submission condition to verify", source: source }); });
+
+      detectedTenderItems = [];
+      lines.forEach(function(line) {
+        const numbered = line.match(/^\s*\d{1,3}[.)]\s+(.{3,120}?)\s+(\d[\d,]*(?:\.\d+)?)\s*$/);
+        const unitBased = line.match(/^\s*(.{3,120}?)\s+(\d[\d,]*(?:\.\d+)?)\s*(?:each|units?|pairs?|boxes?|sets?|months?|hours?)\s*$/i);
+        const match = numbered || unitBased;
+        if (!match || /\b(SBD|closing date|page \d+|section \d+)\b/i.test(match[1])) return;
+        const description = match[1].replace(/^[\d.]+\s*/, "").trim();
+        const qty = Number(match[2].replace(/,/g, ""));
+        if (description && Number.isFinite(qty) && qty > 0 && qty <= 1000000 &&
+            !detectedTenderItems.some(function(item) { return item.desc.toLowerCase() === description.toLowerCase(); })) {
+          detectedTenderItems.push({ desc: description, qty: qty, unitCost: 0, delivery: 0, buffer: 3, markup: 20 });
+        }
+      });
+      detectedTenderItems = detectedTenderItems.slice(0, 100);
+      renderAnalysis(requirements);
+      document.getElementById("useDetectedItems").classList.toggle("hidden", detectedTenderItems.length === 0);
+      queueProjectSave();
+    }
+
+    function renderAnalysis(requirements) {
+      const container = document.getElementById("analysisResults");
+      container.replaceChildren();
+      const heading = document.createElement("h3");
+      heading.className = "font-semibold text-sm text-slate-800 mb-2";
+      heading.textContent = requirements.length ? "Potential requirements to verify" : "No clear requirement cues found";
+      container.appendChild(heading);
+      if (requirements.length) {
+        const list = document.createElement("ul");
+        list.className = "grid grid-cols-1 md:grid-cols-2 gap-2";
+        requirements.forEach(function(requirement) {
+          const item = document.createElement("li");
+          item.className = "border border-slate-200 rounded-lg p-3 text-sm";
+          const label = document.createElement("strong");
+          label.className = "block text-slate-800";
+          label.textContent = requirement.label;
+          const source = document.createElement("span");
+          source.className = "block text-xs text-slate-600 mt-1";
+          source.textContent = "Check: " + requirement.source;
+          item.append(label, source);
+          list.appendChild(item);
+        });
+        container.appendChild(list);
+      }
+      if (detectedTenderItems.length) {
+        const preview = document.createElement("p");
+        preview.className = "text-xs text-slate-600 mt-3";
+        preview.textContent = "Possible line items: " + detectedTenderItems.map(function(item) {
+          return item.desc + " — qty " + item.qty;
+        }).join("; ") + ". These are tentative; review before adding.";
+        container.appendChild(preview);
+      }
+      const disclaimer = document.createElement("p");
+      disclaimer.className = "text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3";
+      disclaimer.textContent = "This is a local keyword-based assistant, not a generative AI or legal/procurement review. It can miss requirements or misread tables. Confirm every item, date, form, calculation and addendum in the official tender documents before submission.";
+      container.appendChild(disclaimer);
+    }
+
+    function applyDetectedItems() {
+      if (!detectedTenderItems.length) return;
+      items = detectedTenderItems.map(function(item) { return Object.assign({}, item); });
+      renderTable();
+      document.getElementById("rfqRows").scrollIntoView({ behavior: "smooth", block: "center" });
+      setSaveStatus("Detected line items added. Enter supplier costs and verify all quantities.", false);
+      queueProjectSave();
+    }
+
+    function csvCell(value) {
+      return '"' + String(value).replace(/"/g, '""') + '"';
+    }
+
+    function exportSbd31() {
+      const vatStatus = document.getElementById("vatStatus").value;
+      const vatRate = Math.max(0, Number(document.getElementById("vatRate").value) || 0) / 100;
+      const pricingMethod = document.getElementById("pricingMethod").value;
+      const rows = [["Item", "Description", "Quantity", "Unit bid price (R)", "Line total (R)"]];
+      let subtotal = 0;
+      items.forEach(function(item, index) {
+        const qty = Math.max(1, item.qty);
+        const landed = item.unitCost + item.delivery / qty + item.unitCost * item.buffer / 100;
+        const rate = Math.max(0, Math.min(99.9, item.markup)) / 100;
+        const unitPrice = Math.round((pricingMethod === "margin" ? landed / (1 - rate) : landed * (1 + rate)) * 100) / 100;
+        const lineTotal = unitPrice * qty;
+        subtotal += lineTotal;
+        rows.push([index + 1, item.desc, qty, unitPrice.toFixed(2), lineTotal.toFixed(2)]);
+      });
+      rows.push(["", "Subtotal excl. VAT", "", "", subtotal.toFixed(2)]);
+      rows.push(["", "VAT (" + (vatStatus === "vat" ? (vatRate * 100).toFixed(1) + "%" : "not charged") + ")", "", "",
+        (vatStatus === "vat" ? subtotal * vatRate : 0).toFixed(2)]);
+      rows.push(["", "Total bid price", "", "", (subtotal * (vatStatus === "vat" ? 1 + vatRate : 1)).toFixed(2)]);
+      downloadFile("SBD_3_1_Price_Schedule.csv", rows.map(function(row) {
+        return row.map(csvCell).join(",");
+      }).join("\r\n"), "text/csv;charset=utf-8");
+    }
+
+    restoreProject();
     renderTable();
+    saveProject();
+    document.addEventListener("input", queueProjectSave);
+    document.addEventListener("change", queueProjectSave);
   </script>
   <script>
     (function() {
       function numberFromMoney(text) {
-        return parseFloat(String(text).replace(/[^0-9.-]/g, "")) || 0;
+        var normalized = String(text).replace(/\s/g, "").replace(/^R/i, "").replace(",", ".");
+        return parseFloat(normalized) || 0;
       }
       function fmt(value) {
         return "R " + (Number(value) || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

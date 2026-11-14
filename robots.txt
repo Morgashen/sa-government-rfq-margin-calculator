@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://marginrfqcalculator.dpdns.org/sitemap.xml
