@@ -208,7 +208,7 @@
         <div><label for="taxableBefore" class="block text-xs font-semibold text-slate-600 mb-1">Annual taxable income before this bid (R)</label>
           <input id="taxableBefore" type="number" min="0" step="1000" value="0" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
         <div><label for="customTaxRate" class="block text-xs font-semibold text-slate-600 mb-1">Custom estimated rate (%)</label>
-          <input id="customTaxRate" type="number" min="0" max="100" step="0.1" value="27" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+          <input id="customTaxRate" type="number" min="0" max="100" step="0.1" value="0" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         <div><label for="taxableTurnoverBefore" class="block text-xs font-semibold text-slate-600 mb-1">Turnover before this bid (R)</label>
@@ -247,7 +247,7 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Estimated Lowest Competitor ($P_{\min}$)</label>
-          <input type="number" id="simLowestPrice" value="32000" oninput="runPointsSim()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          <input type="number" id="simLowestPrice" value="0" oninput="runPointsSim()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
         </div>
         <div>
           <label id="simGoalLabel" class="block text-xs font-semibold text-slate-600 mb-1" for="simGoalPoints">Evidenced specific-goal points (out of 20)</label>
@@ -266,9 +266,7 @@
 
   <script>
     let items = [
-      { desc: "Heavy Duty Safety Boots (Size 6-11, SABS Approved)", qty: 40, unitCost: 485.00, delivery: 650.00, buffer: 3, markup: 22 },
-      { desc: "Reflective Two-Tone Workwear Jackets (Navy/Lime)", qty: 40, unitCost: 210.00, delivery: 350.00, buffer: 3, markup: 25 },
-      { desc: "A4 80gsm White Copy Paper (Boxes of 5 Reams)", qty: 25, unitCost: 315.00, delivery: 450.00, buffer: 2, markup: 18 }
+      { desc: "", qty: 0, unitCost: 0, delivery: 0, buffer: 0, markup: 0 }
     ];
 
     function formatZAR(num) {
