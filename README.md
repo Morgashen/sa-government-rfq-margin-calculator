@@ -10,7 +10,7 @@ Open `index.html` in a modern browser. No build step or server is required.
 
 This is a static site. Vercel can serve the repository root directly with no build command and no output directory. On its first visit while online, the app installs a service worker that caches the planner shell and Tailwind CSS for offline use. The offline cache requires HTTPS (or localhost during development); open the app online once before using it offline.
 
-The production hostname is `https://marginrfqcalculator.dpdns.org/`. The page declares that HTTPS URL as its canonical, and `robots.txt` points crawlers to `sitemap.xml`. The HTTP-to-HTTPS redirect is intentional; the canonical HTTPS page should return `200 OK`. After deploying indexing changes, submit the sitemap in Google Search Console and request indexing for the canonical URL. Search Console may need to recrawl before its reported status updates.
+The production hostname is `https://marginrfqcalculator.dpdns.org/`. The page declares that HTTPS URL as its canonical and includes search/social metadata and WebApplication structured data; `robots.txt` points crawlers to `sitemap.xml`. The HTTP-to-HTTPS redirect is intentional; the canonical HTTPS page should return `200 OK`. After deploying indexing changes, submit the sitemap in Google Search Console and request indexing for the canonical URL. Search Console may need to recrawl before its reported status updates.
 
 ## Notes
 
