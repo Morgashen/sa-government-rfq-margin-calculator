@@ -1,7 +1,7 @@
 "use strict";
 
-const CACHE_NAME = "sa-tender-planner-shell-v1";
-const APP_SHELL = ["/", "/favicon.svg", "/robots.txt", "/sitemap.xml"];
+const CACHE_NAME = "sa-tender-planner-shell-v2";
+const APP_SHELL = ["/", "/about.html", "/contact.html", "/privacy.html", "/terms.html", "/favicon.svg", "/robots.txt", "/sitemap.xml"];
 const TAILWIND_URL = "https://cdn.tailwindcss.com/";
 
 self.addEventListener("install", function(event) {

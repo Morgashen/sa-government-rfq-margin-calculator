@@ -22,6 +22,8 @@ The service worker caches the app shell and Tailwind CSS, but does not cache RFQ
 
 ## Tender planning features
 
+- Publisher, contact, privacy and terms pages are available from the site footer. The contact route uses the project's public GitHub Issues page; don't post tender documents or sensitive information there.
+- A practical tender application guide covers bid/no-bid screening, requirements-to-evidence mapping, complete pricing, submission checks, safe delivery practices, fraud prevention and recordkeeping, with links to official South African resources.
 - Progress is automatically saved in this browser on this device. Use **Download project** to keep a portable JSON backup or **Load project** to restore one. The project includes entered prices, planner settings, checklist progress and any RFQ text pasted into the assistant.
 - A new planner starts with blank, zero-valued tender fields and a 15% VAT rate.
 - The tender document assistant analyses pasted text, `.txt`/`.csv` files and PDFs locally in the browser. PDF text is extracted automatically; scanned pages can be OCRed in English on request. The assistant highlights likely dates, forms, submission conditions and possible line items; detected line items are added with a zero supplier cost for you to review and complete.

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>South African Government Tender Calculator | SBD 3.1</title>
-  <meta name="description" content="Price South African government tenders with an RFQ margin calculator, VAT and tax estimates, SBD 3.1 pricing, preference points and bid-readiness planning.">
+  <meta name="description" content="Plan South African government tender bids with an RFQ pricing calculator and practical guidance on bid preparation, supplier checks, safe delivery, submission and fraud prevention.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://marginrfqcalculator.dpdns.org/">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -13,11 +13,11 @@
   <meta property="og:locale" content="en_ZA">
   <meta property="og:site_name" content="SA Government Tender Bid Planner">
   <meta property="og:title" content="South African Government Tender Calculator | SBD 3.1">
-  <meta property="og:description" content="Price South African government tenders with RFQ analysis, VAT and tax estimates, SBD 3.1 pricing, preference points and bid-readiness planning.">
+  <meta property="og:description" content="Plan South African government tender bids with an RFQ pricing calculator and practical guidance on bid preparation, supplier checks, safe delivery, submission and fraud prevention.">
   <meta property="og:url" content="https://marginrfqcalculator.dpdns.org/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="South African Government Tender Calculator | SBD 3.1">
-  <meta name="twitter:description" content="Plan South African government RFQ pricing, VAT, tax estimates, preference points and tender readiness.">
+  <meta name="twitter:description" content="Plan South African government tender bids with an RFQ calculator and practical bid preparation, safety and fraud-prevention guidance.">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -54,6 +54,7 @@
         <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">South Africa • Pre-bid planning</span>
         <h1 class="text-2xl md:text-3xl font-bold mt-2">South African Government Tender Bid Planner</h1>
         <p class="text-slate-300 text-sm mt-1">Estimate RFQ costs and margins, plan SBD 3.1 pricing, review bid readiness and model preference points before submission.</p>
+        <a href="#tender-guide" class="inline-block text-emerald-300 underline text-sm mt-3">Read the practical tender application and safety guide</a>
       </div>
       <div class="flex flex-wrap gap-2 no-print">
         <button onclick="saveProject()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition">
@@ -216,7 +217,7 @@
         <div><label for="annualPayroll" class="block text-xs font-semibold text-slate-600 mb-1">Employer annual payroll (R)</label><input id="annualPayroll" type="number" min="0" step="10000" value="0" oninput="recalculateAll()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
       </div>
       <div class="mt-3 bg-slate-50 rounded-lg p-3 text-sm">Tender-period labour plus employer levies: <strong id="payrollCostResult">R 0.00</strong><div id="payrollLeviesResult" class="text-xs text-slate-500 mt-1">Employer UIF R 0.00 · SDL R 0.00</div></div>
-      <p class="text-xs text-slate-500 mt-2">2026/27 planning rates: employer UIF 1% per employee, capped at R17,712 monthly remuneration; SDL 1% if annual payroll exceeds R500,000, subject to exemptions. Confirm payroll rules and exemptions with SARS.</p>
+      <p class="text-xs text-slate-500 mt-2">Planning estimate: employer UIF is 1% per employee up to the published monthly remuneration ceiling of R17,712; SDL is 1% where the employer's expected remuneration exceeds R500,000 over 12 months, subject to exemptions. The estimate divides entered payroll evenly across the employee count; actual UIF is calculated per employee. Confirm current rules and exemptions with <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/unemployment-insurance-fund/" target="_blank" rel="noopener noreferrer">SARS UIF guidance</a> and <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/skills-development-levy/" target="_blank" rel="noopener noreferrer">SARS SDL guidance</a>.</p>
     </div>
 
     <!-- Tax reserve and current rates -->
@@ -252,7 +253,7 @@
         <p class="mt-4">VAT: standard rate 15%; registration thresholds from 1 April 2026 are R2.3m compulsory and R120,000 voluntary taxable supplies. UIF: employee and employer each 1%, capped at R17,712 monthly remuneration. SDL: employer 1% if annual payroll exceeds R500,000, subject to exemptions. Company income tax: 27%.</p>
       </details>
       <div id="taxEligibilityNote" class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3 text-xs text-amber-950"></div>
-      <p class="text-xs text-slate-500 mt-3">Rates checked 10 November 2026: <a class="text-emerald-700 underline" href="https://www.sars.gov.za/tax-rates/income-tax/companies-trusts-and-small-business-corporations-sbc/" target="_blank" rel="noreferrer">SARS company / SBC rates</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/turnover-tax/" target="_blank" rel="noreferrer">turnover tax</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/" target="_blank" rel="noreferrer">individual tax rates</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/value-added-tax/" target="_blank" rel="noreferrer">VAT</a></p>
+      <p class="text-xs text-slate-500 mt-3">Rates checked 24 November 2026: <a class="text-emerald-700 underline" href="https://www.sars.gov.za/tax-rates/income-tax/companies-trusts-and-small-business-corporations-sbc/" target="_blank" rel="noopener noreferrer">SARS company / SBC rates</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/turnover-tax/" target="_blank" rel="noopener noreferrer">turnover tax</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/" target="_blank" rel="noopener noreferrer">individual tax rates</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/value-added-tax/" target="_blank" rel="noopener noreferrer">VAT</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/unemployment-insurance-fund/" target="_blank" rel="noopener noreferrer">UIF</a> · <a class="text-emerald-700 underline" href="https://www.sars.gov.za/types-of-tax/skills-development-levy/" target="_blank" rel="noopener noreferrer">SDL</a></p>
     </div>
 
     <!-- 80/20 Points Estimator -->
@@ -284,6 +285,132 @@
           <div id="simPricePoints" class="text-xs text-slate-300 text-right">Price: 0.0 / 80</div>
         </div>
       </div>
+
+      <article id="tender-guide" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8 mt-6">
+        <header class="max-w-4xl mb-8">
+          <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Practical guide for South African suppliers</p>
+          <h2 class="text-2xl font-bold text-slate-900 mt-2">How to prepare a responsible government tender application</h2>
+          <p class="text-slate-600 mt-3">A strong tender response is more than a low price. It shows, with clear evidence, that your business understands the requirement, can deliver it safely and on time, and has priced the full cost of doing so. Use this guide alongside the specific invitation to bid, request for quotation (RFQ), specifications, forms and every addendum.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <section class="lg:col-span-2" aria-labelledby="applicationStepsTitle">
+            <h3 id="applicationStepsTitle" class="text-lg font-bold text-slate-800 mb-3">A practical bid-preparation workflow</h3>
+            <ol class="space-y-4 text-sm text-slate-700 list-decimal pl-5">
+              <li><strong>Confirm the opportunity and the rules.</strong> Save the original notice and all tender-pack files. Record the reference number, buyer contact, closing date and time, delivery method, briefing requirements and question deadline. Check the buyer's official channel for addenda right up to closing; an amended document can replace earlier instructions.</li>
+              <li><strong>Make a bid / no-bid decision.</strong> Check that the opportunity fits your business, that you meet mandatory eligibility conditions, and that your team can meet the specification, delivery location, quantities, service levels and contract period. Decline early if a mandatory condition cannot be met. Do not rely on a hoped-for waiver.</li>
+              <li><strong>Turn the specification into an evidence matrix.</strong> List each requirement, where your response addresses it, and the supporting proof to attach. Separate mandatory returnables from scored criteria and technical requirements. Use the buyer's exact form and numbering so an evaluator can find the evidence quickly. Ask questions through the stated channel when requirements conflict or are unclear.</li>
+              <li><strong>Build a deliverable and complete price.</strong> Get current written supplier quotes and confirm stock, quote validity, lead times, delivery, installation, packaging, insurance, travel, subcontracting and warranty costs. Check the required unit of measure and total quantities. Account for cash-flow timing and realistic price validity; don't assume that payment will arrive before supplier or payroll costs fall due.</li>
+              <li><strong>Prepare and independently check the response.</strong> Complete every requested field, declaration and signature. Confirm that named signatories have authority, that certificates and claims are current, and that any joint-venture or subcontractor commitments are documented. Ask someone other than the preparer to check arithmetic, consistency, attachments and compliance against the returnables list.</li>
+              <li><strong>Submit early and retain proof.</strong> Follow the required portal, email, physical-envelope or other delivery method exactly. Check file formats, size limits, naming rules, page ordering and any encryption instructions. Allow time for upload or delivery problems. Keep a dated copy of the exact submission, receipt or tracking reference, and any clarification correspondence.</li>
+              <li><strong>After submission, stay professional.</strong> Monitor only the official communication channel, respond to lawful clarification requests by their deadline, and keep a record of what was sent. Do not offer gifts, private benefits or undisclosed inducements to influence an evaluation or award.</li>
+            </ol>
+          </section>
+
+          <aside class="bg-slate-50 border border-slate-200 rounded-xl p-5" aria-labelledby="beforeSubmitTitle">
+            <h3 id="beforeSubmitTitle" class="text-lg font-bold text-slate-800 mb-3">Final 10-minute review</h3>
+            <ul class="space-y-2 text-sm text-slate-700">
+              <li>☐ Correct tender number and latest addenda</li>
+              <li>☐ Closing date, time and submission route confirmed</li>
+              <li>☐ Every mandatory form and attachment included</li>
+              <li>☐ Prices, totals, VAT treatment and validity period checked</li>
+              <li>☐ Signatures, initials and authority confirmed</li>
+              <li>☐ Evidence supports every preference or capability claim</li>
+              <li>☐ Final files open and match the intended version</li>
+              <li>☐ Submission receipt saved securely</li>
+            </ul>
+            <p class="text-xs text-slate-500 mt-4">This is a working aid, not a substitute for the buyer's returnables schedule. A tender may require additional steps or documents.</p>
+          </aside>
+        </div>
+
+        <section class="mb-8" aria-labelledby="pricingGuideTitle">
+          <h3 id="pricingGuideTitle" class="text-lg font-bold text-slate-800 mb-3">Price for delivery, not just for the quote</h3>
+          <p class="text-sm text-slate-700 mb-4">Before entering a bid price, map each cost to a line item or a documented overhead allocation. A quote that omits one delivery cost can turn an apparently profitable award into a loss. Avoid double-counting costs already included in a supplier price or another line.</p>
+          <div class="overflow-x-auto border border-slate-200 rounded-lg">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-600"><tr><th class="p-3">Cost area</th><th class="p-3">Questions to resolve before pricing</th></tr></thead>
+              <tbody class="divide-y divide-slate-200 text-slate-700">
+                <tr><th class="p-3 font-semibold">Supply and fulfilment</th><td class="p-3">Are supplier prices current? Who pays freight, packaging, offloading, installation, travel or import charges? Is the quoted stock actually available?</td></tr>
+                <tr><th class="p-3 font-semibold">People and operations</th><td class="p-3">How many staff-hours, shifts, training, supervision, tools and consumables are needed? Are relief cover and employer costs included where relevant?</td></tr>
+                <tr><th class="p-3 font-semibold">Contract exposure</th><td class="p-3">What are the delivery milestones, service levels, warranty, insurance, retention, penalties and performance-security conditions in the contract?</td></tr>
+                <tr><th class="p-3 font-semibold">Tax and cash flow</th><td class="p-3">Does the stated price need to include or separately show VAT? When are supplier, payroll and tax payments due compared with expected buyer payment terms?</td></tr>
+                <tr><th class="p-3 font-semibold">Contingency and margin</th><td class="p-3">What realistic risks could change cost or timing? Is contingency based on a reasoned estimate rather than an arbitrary buffer, and does the remaining margin justify the risk?</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-slate-500 mt-3">The calculator's figures are estimates, not accounting or tax advice. Tender pricing instructions and the supplier's actual tax status take precedence; have material or uncertain tax treatment checked with SARS or a qualified adviser.</p>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <section class="border border-emerald-100 bg-emerald-50/60 rounded-xl p-5" aria-labelledby="safeDeliveryTitle">
+            <h3 id="safeDeliveryTitle" class="text-lg font-bold text-slate-800 mb-3">Safe work and responsible delivery</h3>
+            <p class="text-sm text-slate-700 mb-3">For site, construction, transport, maintenance or other hands-on work, safety planning is part of delivery capacity. Identify the hazards and controls relevant to the actual scope before pricing or mobilising.</p>
+            <ul class="space-y-2 text-sm text-slate-700 list-disc pl-5">
+              <li>Review the buyer's site rules, access controls, inductions, permits and required safety documentation before the start date.</li>
+              <li>Assign competent supervisors; brief workers on task hazards, emergency arrangements and the procedure for stopping unsafe work.</li>
+              <li>Provide and maintain suitable tools and protective equipment, and verify that workers know how to use them.</li>
+              <li>Plan safe transport, lifting, storage, housekeeping and protection of the public, staff and buyer's property.</li>
+              <li>Report incidents, near misses and changed hazards through agreed channels; record corrective actions and do not conceal an incident.</li>
+              <li>Check that subcontractors understand and follow the same site and safety requirements, and clarify who coordinates each control.</li>
+            </ul>
+            <p class="text-xs text-slate-600 mt-3">These are general planning prompts, not a complete safety plan or legal interpretation. Apply the current occupational health and safety requirements and the buyer's site-specific rules; obtain competent professional advice for higher-risk work.</p>
+          </section>
+
+          <section class="border border-amber-100 bg-amber-50/60 rounded-xl p-5" aria-labelledby="fraudSafetyTitle">
+            <h3 id="fraudSafetyTitle" class="text-lg font-bold text-slate-800 mb-3">Protect your business from tender fraud</h3>
+            <ul class="space-y-2 text-sm text-slate-700 list-disc pl-5">
+              <li>Verify notices, amendments, contact details and payment instructions using the procuring institution's independently located official website or switchboard.</li>
+              <li>Treat requests for a fee to "secure" an award, confidential competitor prices, gifts, or personal bank transfers as warning signs. Never pay an unofficial intermediary to influence an evaluation.</li>
+              <li>Use a unique password and multi-factor authentication for supplier, email and tender-portal accounts. Limit access to staff who need it and remove access when roles change.</li>
+              <li>Check the recipient and address before sending company registrations, tax details, identity documents, bank letters or signed tender files. Share only what the official process requires.</li>
+              <li>Keep a protected copy of the tender pack, submitted response, supplier quotes and communications. Do not put banking credentials, passwords or unnecessary personal data in this planner or an exported project file.</li>
+              <li>If a message or payment instruction seems suspicious, pause, verify through a known official channel, preserve the evidence, and report it to the relevant institution or appropriate authorities.</li>
+            </ul>
+          </section>
+        </div>
+
+        <section class="mb-8" aria-labelledby="recordsTitle">
+          <h3 id="recordsTitle" class="text-lg font-bold text-slate-800 mb-3">Keep a bid file that supports the full contract lifecycle</h3>
+          <p class="text-sm text-slate-700">Use a controlled folder for the notice, specifications, addenda, clarification questions, supplier quotations, calculations, approvals, final submission and receipt. If awarded, add the signed contract, purchase orders, delivery notes, inspection or acceptance records, invoices, payment follow-ups, warranty items and close-out notes. Restrict access to sensitive information, use versioned file names, and follow your organisation's retention and privacy requirements. Clear records help resolve questions about what was offered, delivered, accepted and paid.</p>
+        </section>
+
+        <section aria-labelledby="resourcesTitle">
+          <h3 id="resourcesTitle" class="text-lg font-bold text-slate-800 mb-3">Official starting points and common questions</h3>
+          <ul class="list-disc pl-5 space-y-1 text-sm text-slate-700 mb-5">
+            <li><a class="text-emerald-800 underline" href="https://www.etenders.gov.za/" target="_blank" rel="noopener noreferrer">South African eTenders portal</a> — check notices and the instructions published for each opportunity.</li>
+            <li><a class="text-emerald-800 underline" href="https://secure.csd.gov.za/" target="_blank" rel="noopener noreferrer">Central Supplier Database (CSD)</a> — manage supplier registration details and check the current requirements relevant to your bid.</li>
+            <li><a class="text-emerald-800 underline" href="https://www.sars.gov.za/" target="_blank" rel="noopener noreferrer">South African Revenue Service (SARS)</a> — confirm current tax, VAT and compliance guidance for your circumstances.</li>
+            <li><a class="text-emerald-800 underline" href="https://www.treasury.gov.za/" target="_blank" rel="noopener noreferrer">National Treasury</a> — consult current procurement information and official publications.</li>
+          </ul>
+          <div class="space-y-3">
+            <details class="border border-slate-200 rounded-lg p-4">
+              <summary class="font-semibold text-slate-800 cursor-pointer">Does an active CSD profile guarantee that my bid is compliant?</summary>
+              <p class="text-sm text-slate-700 mt-2">No. Supplier registration is only one part of readiness. The specific tender can set additional eligibility, evidence, pricing, declaration, briefing and submission requirements. Check each notice and its latest addenda.</p>
+            </details>
+            <details class="border border-slate-200 rounded-lg p-4">
+              <summary class="font-semibold text-slate-800 cursor-pointer">Can I reuse the same response for every tender?</summary>
+              <p class="text-sm text-slate-700 mt-2">Reuse a controlled company profile where information remains accurate, but tailor the technical response, evidence, forms, price, validity and submission method to each opportunity. Remove outdated claims and check every version before sending.</p>
+            </details>
+            <details class="border border-slate-200 rounded-lg p-4">
+              <summary class="font-semibold text-slate-800 cursor-pointer">Does the preference-points simulator predict whether I will win?</summary>
+              <p class="text-sm text-slate-700 mt-2">No. It illustrates an indicative calculation from values you enter. The invitation's evaluation system, eligible specific goals, evidence rules, price basis and evaluation process control the official result; competitor pricing is usually unknown.</p>
+            </details>
+            <details class="border border-slate-200 rounded-lg p-4">
+              <summary class="font-semibold text-slate-800 cursor-pointer">Is information entered in this planner sent to the website?</summary>
+              <p class="text-sm text-slate-700 mt-2">The planner processes tender text and entered pricing in your browser and saves progress in this browser's local storage. Downloaded project files contain the saved information, so protect them if they include commercially sensitive details. External libraries and site analytics/advertising scripts may still make network requests. Use browser controls and avoid entering passwords, banking credentials or other secrets.</p>
+            </details>
+          </div>
+        </section>
+
+        <p class="border-t border-slate-200 mt-6 pt-4 text-xs text-slate-500">This independent planning resource is not an official government service and does not provide legal, accounting, tax or occupational-safety advice. Government procurement rules, forms, thresholds and tax guidance can change. Always follow the current tender pack and confirm material questions directly with the procuring institution or the relevant official authority. Use of this guide does not guarantee compliance, an award or approval by an advertising platform.</p>
+      </article>
+      <footer class="py-6 text-sm text-slate-600 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-200 mt-6">
+        <span>&copy; 2026 Clockwork Investment Pty (Ltd)</span>
+        <a class="underline hover:text-emerald-800" href="/about.html">About</a>
+        <a class="underline hover:text-emerald-800" href="/contact.html">Contact</a>
+        <a class="underline hover:text-emerald-800" href="/privacy.html">Privacy</a>
+        <a class="underline hover:text-emerald-800" href="/terms.html">Terms &amp; disclaimer</a>
+      </footer>
     </div>
   </div>
 
