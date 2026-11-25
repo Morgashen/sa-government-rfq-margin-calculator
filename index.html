@@ -1118,7 +1118,7 @@
       window.addEventListener("online", updateOfflineStatus);
       window.addEventListener("offline", updateOfflineStatus);
       navigator.serviceWorker.addEventListener("controllerchange", updateOfflineStatus);
-      navigator.serviceWorker.register("/service-worker.js").then(function() {
+      navigator.serviceWorker.register("/sw.js").then(function() {
         updateOfflineStatus();
       }).catch(function(error) {
         console.error("Could not register the offline cache:", error);
